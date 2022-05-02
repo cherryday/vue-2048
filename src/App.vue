@@ -1,45 +1,133 @@
 <script setup>
-import { reactive } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
+import GameTile from './components/GameTile.vue';
 
-let rows = reactive([
-  { x: 0, y: 0, value: 2 },
-  { x: 1, y: 0, value: 2 },
+const tiles = ref([
+  { id: 1, x: 0, y: 0, value: 2 },
+  { id: 4, x: 3, y: 0, value: 2 },
+  { id: 3, x: 2, y: 0, value: 2 },
+  { id: 5, x: 1, y: 1, value: 2 },
+  { id: 2, x: 1, y: 0, value: 2 },
 ]);
 
-// function getStyles(x, y) {
-//   return {
-//     transform: `translate(${x * 106 + 15}px, ${y * 106 + 15}px)`
-//   }
-// }
+watch(
+  () => tiles,
+  (newValue, oldValue) => {
+    // console.log('Watch', newValue, oldValue);
+  },
+  { deep: true },
+);
 
-// let matrix = reactive([
-//   [1, 0, 0, 0],
-//   [0, 0, 0, 0],
-//   [0, 0, 0, 0],
-//   [0, 0, 0, 0],
-// ]);
+function getRowsByAxis(axis) {
+  return [
+    ...tiles.value
+      .reduce((acc, tile) => {
+        if (acc.has(tile[axis])) {
+          acc.set(tile[axis], [...acc.get(tile[axis]), tile]);
+        } else {
+          acc.set(tile[axis], [tile]);
+        }
+        return acc;
+      }, new Map())
+      .values(),
+  ];
+}
+
+function getDistanceAxis(rows, axis) {
+  const max = 3;
+
+  rows.forEach((rows) => {
+    rows.forEach((currentTile, index) => {
+      const nextTile = rows[index - 1];
+
+      if (nextTile) {
+        if (currentTile.value === nextTile.value && !nextTile.isMerge) {
+          currentTile.isMerge = true;
+          currentTile[axis] = nextTile[axis];
+        } else {
+          currentTile[axis] = nextTile[axis] - 1;
+        }
+      } else if (currentTile[axis] < max) {
+        currentTile[axis] = max;
+      }
+    });
+  });
+}
+
+function getDistanceUpAxis(rows, axis) {
+  const min = 0;
+
+  rows.forEach((rows) => {
+    rows.forEach((currentTile, index) => {
+      const nextTile = rows[index - 1];
+
+      if (nextTile) {
+        if (currentTile.value === nextTile.value && !nextTile.isMerge) {
+          currentTile.isMerge = true;
+          currentTile[axis] = nextTile[axis];
+        } else {
+          currentTile[axis] = nextTile[axis] + 1;
+        }
+      } else if (currentTile[axis] > min) {
+        currentTile[axis] = min;
+      }
+    });
+  });
+}
+
+function moveRight() {
+  const sortedRows = getRowsByAxis('y').map((row) =>
+    row.sort((a, b) => b.x - a.x),
+  );
+  getDistanceAxis(sortedRows, 'x');
+}
+
+function moveLeft() {
+  const sortedRows = getRowsByAxis('y').map((row) =>
+    row.sort((a, b) => a.x - b.x),
+  );
+  getDistanceUpAxis(sortedRows, 'x');
+}
+
+function moveDown() {
+  const sortedRows = getRowsByAxis('x').map((row) =>
+    row.sort((a, b) => b.y - a.y),
+  );
+  getDistanceAxis(sortedRows, 'y');
+}
+
+function moveUp() {
+  const sortedRows = getRowsByAxis('x').map((row) =>
+    row.sort((a, b) => a.y - b.y),
+  );
+  getDistanceUpAxis(sortedRows, 'y');
+}
+
+function onMergeTiles(tile) {
+  tiles.value = tiles.value.filter((a) => a.id !== tile.id);
+  const mergedTile = tiles.value.find(
+    (a) => a.x === tile.x && a.y === tile.y && !a.isMerge,
+  );
+  mergedTile.value += tile.value;
+}
 
 window.addEventListener('keydown', (event) => {
   const code = event.code;
 
   if (code === 'ArrowUp') {
-    // rows.push({ x: 1, y: 0, value: 2 });
-    rows[0].y = 0;
+    moveUp();
   }
 
   if (code === 'ArrowRight') {
-    rows[0].x = 2;
-    rows[1].x = 3;
+    moveRight();
   }
   if (code === 'ArrowLeft') {
-    rows[0].x = 0;
-    rows[1].x = 1;
+    moveLeft();
   }
   if (code === 'ArrowDown') {
-    rows[0].y = 3;
+    moveDown();
   }
 });
-//
 </script>
 
 <template>
@@ -49,18 +137,12 @@ window.addEventListener('keydown', (event) => {
         <span>{{ index }}</span>
       </div>
 
-      <div
-        v-for="(row, index) in rows"
-        :key="index"
-        class="content"
-        :style="{
-          transform: `translate(${row.x * 106 + 15 + row.x * 15}px, ${
-            row.y * 106 + 15 + row.y * 15
-          }px)`,
-        }"
-      >
-        {{ row.value }}
-      </div>
+      <GameTile
+        v-for="(tile, index) in tiles"
+        :key="tile.id"
+        :tile="tile"
+        @merge="onMergeTiles(tile)"
+      />
     </div>
   </main>
 </template>
@@ -70,6 +152,8 @@ window.addEventListener('keydown', (event) => {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  position: relative;
 }
 
 .board {
@@ -84,26 +168,6 @@ window.addEventListener('keydown', (event) => {
 }
 
 .cell {
-  /* width: 106px;
-  height: 106px; */
   background-color: #ccc0b3;
 }
-
-.content {
-  position: absolute;
-  display: block;
-  height: 106px;
-  width: 106px;
-  background-color: #eee4da;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #776e65;
-  font-size: 32px;
-  transition: transform 100ms ease-in-out;
-}
-
-/* .content:hover {
-  transform: translateY(121px);
-} */
 </style>

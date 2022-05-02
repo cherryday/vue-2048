@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 
-// { x: 0, y: 0, value: 2, isMerge: false }
+// { id: 0, x: 0, y: 0, value: 2, isMerge: false }
 const props = defineProps({
   tile: {
     type: Object,
@@ -23,7 +23,6 @@ function onTransitionEnd() {
   if (props.tile.isMerge) {
     emit('merge');
   }
-  console.log('Animation end', props.tile);
 }
 </script>
 
