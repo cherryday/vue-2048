@@ -1,7 +1,8 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 
-// { id: 0, x: 0, y: 0, value: 2, isMerge: false }
+const emit = defineEmits(['merge']);
+
 const props = defineProps({
   tile: {
     type: Object,
@@ -9,7 +10,14 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['merge']);
+const isScaling = ref(false);
+
+watch(
+  () => props.tile.value,
+  () => {
+    isScaling.value = true;
+  },
+);
 
 const styles = computed(() => {
   return {
@@ -24,6 +32,10 @@ function onTransitionEnd() {
     emit('merge');
   }
 }
+
+function onAnimationEnd() {
+  isScaling.value = false;
+}
 </script>
 
 <template>
@@ -33,7 +45,11 @@ function onTransitionEnd() {
     :style="styles"
     @transitionend="onTransitionEnd"
   >
-    <div class="game-tile__inner game-tile--scale">
+    <div
+      class="game-tile__inner"
+      :class="{ 'game-tile--scale': isScaling }"
+      @animationend="onAnimationEnd"
+    >
       {{ props.tile.value }}
     </div>
   </div>

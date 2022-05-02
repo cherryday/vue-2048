@@ -10,13 +10,7 @@ const tiles = ref([
   { id: 2, x: 1, y: 0, value: 2 },
 ]);
 
-watch(
-  () => tiles,
-  (newValue, oldValue) => {
-    // console.log('Watch', newValue, oldValue);
-  },
-  { deep: true },
-);
+function generateTile() {}
 
 function getRowsByAxis(axis) {
   return [
@@ -133,12 +127,10 @@ window.addEventListener('keydown', (event) => {
 <template>
   <main class="main">
     <div class="board">
-      <div v-for="index in 16" :key="index" class="cell">
-        <span>{{ index }}</span>
-      </div>
+      <div v-for="index in 16" :key="index" class="cell"></div>
 
       <GameTile
-        v-for="(tile, index) in tiles"
+        v-for="tile in tiles"
         :key="tile.id"
         :tile="tile"
         @merge="onMergeTiles(tile)"
@@ -152,8 +144,6 @@ window.addEventListener('keydown', (event) => {
   display: flex;
   align-items: center;
   justify-content: center;
-
-  position: relative;
 }
 
 .board {
