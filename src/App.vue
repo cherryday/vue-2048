@@ -1,16 +1,37 @@
 <script setup>
 import { onMounted, reactive, ref, watch } from 'vue';
+import { v4 } from 'uuid';
 import GameTile from './components/GameTile.vue';
 
 const tiles = ref([
-  { id: 1, x: 0, y: 0, value: 2 },
-  { id: 4, x: 3, y: 0, value: 2 },
-  { id: 3, x: 2, y: 0, value: 2 },
-  { id: 5, x: 1, y: 1, value: 2 },
-  { id: 2, x: 1, y: 0, value: 2 },
+  // { id: 1, x: 0, y: 0, value: 2 },
+  // { id: 4, x: 3, y: 0, value: 2 },
+  // { id: 3, x: 2, y: 0, value: 2 },
+  // { id: 5, x: 1, y: 1, value: 2 },
+  // { id: 2, x: 1, y: 0, value: 2 },
 ]);
 
-function generateTile() {}
+generateTile();
+generateTile();
+
+function generateTile() {
+  const boardSize = 4;
+  const freeTiles = [];
+
+  for (let y = 0; y < boardSize; y++) {
+    for (let x = 0; x < boardSize; x++) {
+      const isExist = tiles.value.some((tile) => tile.x === x && tile.y === y);
+      if (!isExist) {
+        freeTiles.push({ id: v4(), x, y, value: 2, isNew: true });
+      }
+    }
+  }
+
+  const randomIndex =
+    0 + Math.floor(Math.random() * (freeTiles.length - 1 + 1 - 0));
+
+  tiles.value.push(freeTiles[randomIndex]);
+}
 
 function getRowsByAxis(axis) {
   return [
@@ -106,21 +127,22 @@ function onMergeTiles(tile) {
 }
 
 window.addEventListener('keydown', (event) => {
-  const code = event.code;
+  tiles.value.forEach((tile) => (tile.isNew = false));
 
-  if (code === 'ArrowUp') {
+  if (event.code === 'ArrowUp') {
     moveUp();
   }
-
-  if (code === 'ArrowRight') {
+  if (event.code === 'ArrowRight') {
     moveRight();
   }
-  if (code === 'ArrowLeft') {
+  if (event.code === 'ArrowLeft') {
     moveLeft();
   }
-  if (code === 'ArrowDown') {
+  if (event.code === 'ArrowDown') {
     moveDown();
   }
+
+  generateTile();
 });
 </script>
 
@@ -159,5 +181,6 @@ window.addEventListener('keydown', (event) => {
 
 .cell {
   background-color: #ccc0b3;
+  border-radius: 4px;
 }
 </style>
