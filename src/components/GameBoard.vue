@@ -1,6 +1,6 @@
 <script setup>
 import GameTile from './GameTile.vue';
-import { SIZE_TILE, PADDING_TILE } from '../constants';
+import { TILE_SIZE, TILE_PADDING, BOARD_SIZE } from '../constants';
 
 const emit = defineEmits(['merge']);
 
@@ -12,14 +12,19 @@ const props = defineProps({
 });
 
 const styleVars = {
-  '--sizeTile': `${SIZE_TILE}px`,
-  '--paddingTile': `${PADDING_TILE}px`,
+  '--tileSize': `${TILE_SIZE}px`,
+  '--tilePadding': `${TILE_PADDING}px`,
+  '--boardSize': BOARD_SIZE,
 };
 </script>
 
 <template>
   <div class="game-board" :style="styleVars">
-    <div v-for="index in 16" :key="index" class="game-board__tile"></div>
+    <div
+      v-for="index in BOARD_SIZE * BOARD_SIZE"
+      :key="index"
+      class="game-board__tile"
+    ></div>
 
     <GameTile
       v-for="tile in props.tiles"
@@ -34,9 +39,9 @@ const styleVars = {
 .game-board {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(4, var(--sizeTile));
-  grid-template-rows: repeat(4, var(--sizeTile));
-  gap: var(--paddingTile);
+  grid-template-columns: repeat(var(--boardSize), var(--tileSize));
+  grid-template-rows: repeat(var(--boardSize), var(--tileSize));
+  gap: var(--tilePadding);
   background-color: #bbac9f;
   border-radius: 4px;
   padding: 15px;

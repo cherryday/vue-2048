@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { SIZE_TILE, PADDING_TILE } from '../constants';
+import { TILE_SIZE, TILE_PADDING } from '../constants';
 
 const emit = defineEmits(['merge']);
 
@@ -21,7 +21,7 @@ watch(
 );
 
 function getPositionByCoord(coord) {
-  return coord * SIZE_TILE + PADDING_TILE + coord * PADDING_TILE;
+  return coord * TILE_SIZE + TILE_PADDING + coord * TILE_PADDING;
 }
 
 const styles = computed(() => {
@@ -80,8 +80,8 @@ function onAnimationEnd() {
 }
 
 .game-tile__inner {
-  height: var(--sizeTile);
-  width: var(--sizeTile);
+  height: var(--tileSize);
+  width: var(--tileSize);
   display: flex;
   align-items: center;
   justify-content: center;
