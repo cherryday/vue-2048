@@ -99,7 +99,7 @@ function onAnimationEnd() {
 }
 
 .game-tile--scale {
-  animation: scale 300ms ease-in-out;
+  animation: scale 100ms ease-in-out;
 }
 
 .game-tile--new {
