@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
+import { SIZE_TILE, PADDING_TILE } from '../constants';
 
 const emit = defineEmits(['merge']);
 
@@ -19,26 +20,28 @@ watch(
   },
 );
 
+function getPositionByCoord(coord) {
+  return coord * SIZE_TILE + PADDING_TILE + coord * PADDING_TILE;
+}
+
 const styles = computed(() => {
   return {
-    transform: `translate(${props.tile.x * 106 + 15 + props.tile.x * 15}px, ${
-      props.tile.y * 106 + 15 + props.tile.y * 15
-    }px)`,
+    transform: `translate(${getPositionByCoord(
+      props.tile.x,
+    )}px, ${getPositionByCoord(props.tile.y)}px)`,
   };
 });
 
-const styleColor = computed(() => {
-  let color = '#776e65';
-  let backgroundColor = '#eee4da';
-
-  if (props.tile.value >= 8) color = '#f9f6f2';
-
-  if (props.tile.value === 4) backgroundColor = '#eee1c9';
-  if (props.tile.value === 8) backgroundColor = '#f3b27a';
-  if (props.tile.value === 16) backgroundColor = '#f69664';
-  if (props.tile.value === 32) backgroundColor = '#f77c5f';
-
-  return { color, backgroundColor };
+const classesInner = computed(() => {
+  return {
+    'game-tile--scale': isScaling.value,
+    'game-tile--new': props.tile.isNew,
+    'game-tile--2': props.tile.value === 2,
+    'game-tile--4': props.tile.value === 4,
+    'game-tile--8': props.tile.value === 8,
+    'game-tile--16': props.tile.value === 16,
+    'game-tile--32': props.tile.value === 32,
+  };
 });
 
 function onTransitionEnd() {
@@ -61,11 +64,7 @@ function onAnimationEnd() {
   >
     <div
       class="game-tile__inner"
-      :class="{
-        'game-tile--scale': isScaling,
-        'game-tile--new': props.tile.isNew,
-      }"
-      :style="styleColor"
+      :class="classesInner"
       @animationend="onAnimationEnd"
     >
       {{ props.tile.value }}
@@ -81,8 +80,8 @@ function onAnimationEnd() {
 }
 
 .game-tile__inner {
-  height: 106px;
-  width: 106px;
+  height: var(--sizeTile);
+  width: var(--sizeTile);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -92,6 +91,7 @@ function onAnimationEnd() {
   font-weight: bold;
   font-family: sans-serif;
   border-radius: 4px;
+  user-select: none;
 }
 
 .game-tile--merge {
@@ -99,11 +99,28 @@ function onAnimationEnd() {
 }
 
 .game-tile--scale {
-  animation: scale 100ms ease-in-out;
+  animation: scale 300ms ease-in-out;
 }
 
 .game-tile--new {
   animation: new 300ms ease-in-out;
+}
+
+.game-tile--2 {
+  color: #776e65;
+  background-color: #eee4da;
+}
+.game-tile--4 {
+  color: #776e65;
+  background-color: #eee1c9;
+}
+.game-tile--8 {
+  color: #f9f6f2;
+  background-color: #f3b27a;
+}
+.game-tile--16 {
+  color: #f9f6f2;
+  background-color: #f69664;
 }
 
 @keyframes new {
