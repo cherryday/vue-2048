@@ -16,6 +16,8 @@ const { tiles, restart, mergeTiles } = useGame();
 </template>
 
 <style>
+@import './assets/base.css';
+
 .main {
   display: flex;
   align-items: center;
