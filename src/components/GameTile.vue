@@ -95,7 +95,6 @@ function onAnimationEnd() {
   background-color: #eee4da;
   font-size: 55px;
   font-weight: bold;
-  font-family: sans-serif;
   border-radius: 4px;
   user-select: none;
 }

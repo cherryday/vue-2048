@@ -13,7 +13,6 @@
   padding: 0 20px;
   border: none;
   border-radius: 3px;
-  margin-bottom: 40px;
   font-weight: bold;
   font-size: 18px;
 }
