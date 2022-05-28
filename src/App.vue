@@ -1,22 +1,16 @@
 <script setup>
-import { onMounted, onUnmounted, onUpdated, ref } from 'vue';
-import GameTile from './components/GameTile.vue';
+import GameBoard from './components/GameBoard.vue';
 import { useGame } from './composables/useGame';
 
-const { tiles, onMergeTiles } = useGame();
+const { tiles, restart, mergeTiles } = useGame();
 </script>
 
 <template>
   <main class="main">
-    <div class="board">
-      <div v-for="index in 16" :key="index" class="cell"></div>
+    <div class="container">
+      <button class="button" @click="restart">New Game</button>
 
-      <GameTile
-        v-for="tile in tiles"
-        :key="tile.id"
-        :tile="tile"
-        @merge="onMergeTiles(tile)"
-      />
+      <GameBoard :tiles="tiles" @merge="mergeTiles" />
     </div>
   </main>
 </template>
@@ -28,19 +22,16 @@ const { tiles, onMergeTiles } = useGame();
   justify-content: center;
 }
 
-.board {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(4, 106px);
-  grid-template-rows: repeat(4, 106px);
-  gap: 15px;
-  background-color: #bbac9f;
-  border-radius: 4px;
-  padding: 15px;
-}
-
-.cell {
-  background-color: #ccc0b3;
-  border-radius: 4px;
+.button {
+  background: #8f7a66;
+  color: #f9f6f2;
+  cursor: pointer;
+  height: 40px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 3px;
+  margin-bottom: 40px;
+  font-weight: bold;
+  font-size: 18px;
 }
 </style>
