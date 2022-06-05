@@ -3,7 +3,7 @@ import BaseButton from './components/BaseButton.vue';
 import GameBoard from './components/GameBoard.vue';
 import { useGame } from './composables/useGame';
 
-const { tiles, restart, mergeTiles } = useGame();
+const { tiles, isWin, isLoss, restart, mergeTiles } = useGame();
 </script>
 
 <template>
@@ -11,7 +11,12 @@ const { tiles, restart, mergeTiles } = useGame();
     <div class="container">
       <BaseButton @click="restart">New Game</BaseButton>
 
-      <GameBoard :tiles="tiles" @merge="mergeTiles" />
+      <GameBoard
+        :tiles="tiles"
+        :win="isWin"
+        :loss="isLoss"
+        @merge="mergeTiles"
+      />
     </div>
   </main>
 </template>
