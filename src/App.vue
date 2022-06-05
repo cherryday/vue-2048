@@ -1,6 +1,7 @@
 <script setup>
 import BaseButton from './components/BaseButton.vue';
 import GameBoard from './components/GameBoard.vue';
+import GameScore from './components/GameScore.vue';
 import { useGame } from './composables/useGame';
 
 const { tiles, isWin, isLoss, restart, mergeTiles } = useGame();
@@ -9,7 +10,14 @@ const { tiles, isWin, isLoss, restart, mergeTiles } = useGame();
 <template>
   <main class="main">
     <div class="container">
-      <BaseButton @click="restart">New Game</BaseButton>
+      <div class="main-head">
+        <h1 class="title">2048</h1>
+        <GameScore />
+      </div>
+
+      <div class="main-subhead">
+        <BaseButton @click="restart">New Game</BaseButton>
+      </div>
 
       <GameBoard
         :tiles="tiles"
@@ -28,5 +36,24 @@ const { tiles, isWin, isLoss, restart, mergeTiles } = useGame();
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 20px 0;
+}
+
+.main-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.main-subhead {
+  display: flex;
+  justify-content: end;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 80px;
+  font-weight: bold;
+  color: #776e65;
 }
 </style>
