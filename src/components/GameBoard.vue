@@ -19,6 +19,10 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
+  error: {
+    type: Boolean,
+    required: true,
+  },
 });
 
 const styleVars = {
@@ -43,6 +47,13 @@ const styleVars = {
         Game over!
         <template #action>
           <BaseButton>Try again</BaseButton>
+        </template>
+      </GameMessage>
+
+      <GameMessage v-else-if="error" class="game-error">
+        Game error!
+        <template #action>
+          <BaseButton>Reload page</BaseButton>
         </template>
       </GameMessage>
     </Transition>
@@ -94,6 +105,14 @@ const styleVars = {
 
 .game-over .game-message__title {
   color: #776e65;
+}
+
+.game-error {
+  background-color: rgba(235, 46, 46, 0.6);
+}
+
+.game-error .game-message__title {
+  color: #f9f6f2;
 }
 
 .fade-enter-active,

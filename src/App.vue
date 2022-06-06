@@ -4,7 +4,7 @@ import GameBoard from './components/GameBoard.vue';
 import GameScore from './components/GameScore.vue';
 import { useGame } from './composables/useGame';
 
-const { tiles, isWin, isLoss, restart, mergeTiles } = useGame();
+const { tiles, isWin, isLoss, isError, restart, mergeTiles } = useGame();
 </script>
 
 <template>
@@ -23,6 +23,7 @@ const { tiles, isWin, isLoss, restart, mergeTiles } = useGame();
         :tiles="tiles"
         :win="isWin"
         :loss="isLoss"
+        :error="isError"
         @merge="mergeTiles"
       />
     </div>
