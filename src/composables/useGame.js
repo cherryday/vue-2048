@@ -12,6 +12,7 @@ export function useGame() {
   const bestScore = ref(0);
 
   let isTilesMoved = false;
+  let mergeCount = 0;
 
   function initState() {
     const gameScore = storage.getBestScore();
@@ -26,7 +27,9 @@ export function useGame() {
       tiles.value = gameState.tiles;
       score.value = gameState.score;
     } else {
-      tiles.value = [getRandomTile(), getRandomTile()];
+      tiles.value.push(getRandomTile());
+      tiles.value.push(getRandomTile());
+      storage.setGameState({ tiles: tiles.value, score: score.value });
     }
   }
 
@@ -44,6 +47,7 @@ export function useGame() {
           if (currentTile.value === nextTile.value && !nextTile.isMerge) {
             currentTile.isMerge = true;
             currentTile[axis] = nextTile[axis];
+            mergeCount++;
 
             isTilesMoved = true;
           } else if (
@@ -62,6 +66,9 @@ export function useGame() {
 
     if (isTilesMoved) {
       tiles.value.push(getRandomTile());
+      if (!mergeCount) {
+        storage.setGameState({ tiles: tiles.value, score: score.value });
+      }
       isTilesMoved = false;
     }
   }
@@ -138,18 +145,32 @@ export function useGame() {
     changePositionTiles(sortedRows, 'y', false);
   }
 
-  function mergeTiles(tile) {
-    tiles.value = tiles.value.filter((a) => a.id !== tile.id);
-    const mergedTile = tiles.value.find(
-      (a) => a.x === tile.x && a.y === tile.y && !a.isMerge,
-    );
-    mergedTile.value += tile.value;
+  function mergeTiles() {
+    mergeCount--;
+
+    if (mergeCount <= 0) {
+      tiles.value = tiles.value.filter((tile) => {
+        if (tile.isMerge) {
+          const mergedTile = tiles.value.find(
+            (t) => t.x === tile.x && t.y === tile.y && !t.isMerge,
+          );
+          mergedTile.value += tile.value;
+          return false;
+        }
+        return true;
+      });
+
+      storage.setGameState({ tiles: tiles.value, score: score.value });
+    }
   }
 
   function restart() {
-    tiles.value = [getRandomTile(), getRandomTile()];
-    isTilesMoved = false;
     storage.clearGameState();
+    tiles.value = [];
+    tiles.value.push(getRandomTile());
+    tiles.value.push(getRandomTile());
+    storage.setGameState({ tiles: tiles.value, score: score.value });
+    isTilesMoved = false;
   }
 
   function onKeydown(event) {
