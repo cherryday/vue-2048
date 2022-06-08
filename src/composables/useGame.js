@@ -188,5 +188,14 @@ export function useGame() {
     return false;
   });
 
-  return { tiles, isWin, isLoss, isError, restart, mergeTiles };
+  return {
+    tiles,
+    isWin,
+    isLoss,
+    isError,
+    score,
+    bestScore,
+    restart,
+    mergeTiles,
+  };
 }
