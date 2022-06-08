@@ -1,18 +1,38 @@
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, onErrorCaptured, ref } from 'vue';
+import { v4 } from 'uuid';
+import storage from '../services/storage';
+import { BOARD_SIZE } from '../constants';
 
 export function useGame() {
-  const tiles = ref([
-    { id: 1, x: 0, y: 0, value: 2 },
-    { id: 4, x: 3, y: 0, value: 2 },
-    // { id: 3, x: 2, y: 0, value: 2 },
-    // { id: 5, x: 1, y: 1, value: 2 },
-    // { id: 2, x: 1, y: 0, value: 2 },
-  ]);
+  const tiles = ref([]);
+  const isWin = ref(false);
+  const isLoss = ref(false);
+  const isError = ref(false);
+  const score = ref(0);
+  const bestScore = ref(0);
 
-  // generateTile();
-  // generateTile();
+  let isTilesMoved = false;
+
+  function initState() {
+    const gameScore = storage.getBestScore();
+
+    if (gameScore) {
+      bestScore.value = gameScore;
+    }
+
+    const gameState = storage.getGameState();
+
+    if (gameState) {
+      tiles.value = gameState.tiles;
+      score.value = gameState.score;
+    } else {
+      tiles.value = [getRandomTile(), getRandomTile()];
+    }
+  }
 
   function changePositionTiles(rows, axis, isForward) {
+    tiles.value.forEach((tile) => (tile.isNew = false));
+
     const range = isForward ? 3 : 0;
     const isChange = (coord) => (isForward && coord < range) || coord > range;
 
@@ -24,35 +44,55 @@ export function useGame() {
           if (currentTile.value === nextTile.value && !nextTile.isMerge) {
             currentTile.isMerge = true;
             currentTile[axis] = nextTile[axis];
-          } else {
+
+            isTilesMoved = true;
+          } else if (
+            currentTile[axis] !==
+            nextTile[axis] + (isForward ? -1 : 1)
+          ) {
             currentTile[axis] = nextTile[axis] + (isForward ? -1 : 1);
+            isTilesMoved = true;
           }
         } else if (isChange(currentTile[axis])) {
           currentTile[axis] = range;
+          isTilesMoved = true;
         }
       });
     });
+
+    if (isTilesMoved) {
+      tiles.value.push(getRandomTile());
+      isTilesMoved = false;
+    }
   }
 
-  function generateTile() {
-    const boardSize = 4;
+  function getFreeCoords() {
     const freeTiles = [];
 
-    for (let y = 0; y < boardSize; y++) {
-      for (let x = 0; x < boardSize; x++) {
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
         const isExist = tiles.value.some(
           (tile) => tile.x === x && tile.y === y,
         );
         if (!isExist) {
-          freeTiles.push({ id: v4(), x, y, value: 2, isNew: true });
+          freeTiles.push({ x, y });
         }
       }
     }
 
-    const randomIndex =
-      0 + Math.floor(Math.random() * (freeTiles.length - 1 + 1 - 0));
+    return freeTiles;
+  }
 
-    tiles.value.push(freeTiles[randomIndex]);
+  function getRandomTile() {
+    const freeCoords = getFreeCoords();
+    const randomIndex = Math.floor(Math.random() * freeCoords.length);
+
+    return {
+      id: v4(),
+      value: 2,
+      isNew: true,
+      ...freeCoords[randomIndex],
+    };
   }
 
   function getRowsByAxis(axis) {
@@ -98,7 +138,7 @@ export function useGame() {
     changePositionTiles(sortedRows, 'y', false);
   }
 
-  function onMergeTiles(tile) {
+  function mergeTiles(tile) {
     tiles.value = tiles.value.filter((a) => a.id !== tile.id);
     const mergedTile = tiles.value.find(
       (a) => a.x === tile.x && a.y === tile.y && !a.isMerge,
@@ -106,8 +146,18 @@ export function useGame() {
     mergedTile.value += tile.value;
   }
 
+  function restart() {
+    tiles.value = [getRandomTile(), getRandomTile()];
+    isTilesMoved = false;
+    storage.clearGameState();
+  }
+
   function onKeydown(event) {
-    tiles.value.forEach((tile) => (tile.isNew = false));
+    event.preventDefault();
+
+    if (isWin.value || isLoss.value || isError.value) {
+      return;
+    }
 
     if (event.code === 'ArrowUp') {
       moveUp();
@@ -121,9 +171,9 @@ export function useGame() {
     if (event.code === 'ArrowDown') {
       moveDown();
     }
-
-    // generateTile();
   }
+
+  initState();
 
   onMounted(() => {
     window.addEventListener('keydown', onKeydown);
@@ -133,5 +183,10 @@ export function useGame() {
     window.removeEventListener('keydown', onKeydown);
   });
 
-  return { tiles, onMergeTiles };
+  onErrorCaptured((...args) => {
+    console.log('Error useGame', args);
+    return false;
+  });
+
+  return { tiles, isWin, isLoss, isError, restart, mergeTiles };
 }
