@@ -155,6 +155,7 @@ export function useGame() {
             (t) => t.x === tile.x && t.y === tile.y && !t.isMerge,
           );
           mergedTile.value += tile.value;
+          score.value += mergedTile.value;
           return false;
         }
         return true;
@@ -162,11 +163,17 @@ export function useGame() {
 
       storage.setGameState({ tiles: tiles.value, score: score.value });
     }
+
+    if (score.value > bestScore.value) {
+      bestScore.value = score.value;
+      storage.setBestScore(bestScore.value);
+    }
   }
 
   function restart() {
     storage.clearGameState();
     tiles.value = [];
+    score.value = 0;
     tiles.value.push(getRandomTile());
     tiles.value.push(getRandomTile());
     storage.setGameState({ tiles: tiles.value, score: score.value });
